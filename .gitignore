@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /CInstaller/CInstaller.vcxproj.filters
 /CInstaller/CInstaller.vcxproj
+/CZipLib/install_library.bat
