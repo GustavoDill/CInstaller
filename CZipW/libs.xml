@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<LibraryCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Library Name="wxWidgets" Version="3.2.1">
+    <LibraryPath>C:\libs\wxWidgets-3.2.1</LibraryPath>
+    <Configuration Platform="Win32">
+      <LibPath>lib\vc_lib</LibPath>
+      <IncludePath>include\msvc</IncludePath>
+      <IncludePath>include</IncludePath>
+    </Configuration>
+    <Configuration Platform="x64">
+      <LibPath>lib\vc_x64_lib</LibPath>
+      <IncludePath>include\msvc</IncludePath>
+      <IncludePath>include</IncludePath>
+    </Configuration>
+  </Library>
+</LibraryCollection>
