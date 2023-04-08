@@ -1,6 +1,6 @@
 #include "czip.h"
 
-
+void czip::set_mode(MODE mode) { m_mode = mode; }
 bool czip::add_dir(const std::string& root, const std::string& relpath) {
 	if (m_mode != MODE_COMPRESS) return false;
 	// Yes this whole method is inefficient
@@ -24,6 +24,27 @@ bool czip::add_dir(const std::string& root, const std::string& relpath) {
 
 	}
 	return true;
+}
+
+czip::czip(MODE mode) : m_mode (mode) { }
+
+void czip::open(const char* path) {
+	switch (m_mode) {
+		case MODE_COMPRESS:
+			_out.open(path, std::ios::binary | std::ios::out);
+			write_header();// Reserve space for the header of course
+
+			break;
+
+		case MODE_DECOMPRESS:
+			_in.open(path, std::ios::binary | std::ios::out);
+			int data_pos = _in.tellg();
+			read_header();
+			int c_pos = _in.tellg();
+			current_file = -1; // Read first
+			read_next();
+			break;
+	}
 }
 
 int czip::extract_dir(const std::string& output_path) {
@@ -135,4 +156,41 @@ czip_file* czip::operator[](int file_index) {
 	} while (current_file < file_index);
 
 	return &current;
+}
+
+czip::~czip() {
+	write_header();
+	close();
+}
+
+void czip::close() {
+	switch (m_mode) {
+		case MODE_COMPRESS: _out.close(); break;
+		case MODE_DECOMPRESS: _in.close(); break;
+	}
+}
+
+czip_file* czip::read_first() {
+	_in.seekg(sizeof m_header); // Skip header
+	current_file = -1;
+	return read_next(); // Read first file
+}
+
+constexpr int czip::total_files() const { return m_header.total_files; }
+
+czip::czip(const char* path, MODE mode) : m_mode(mode) {
+	open(path);
+}
+
+void czip::write_header() {
+	_out.seekp(0);
+	_out.write((char*)(&m_header), sizeof m_header);
+}
+
+void czip::read_header() {
+	_in.read((char*)&m_header, sizeof m_header);
+}
+
+std::string __zip_get_rel_dir(const std::string& root, const std::string& current) {
+	return std::filesystem::path(current).lexically_relative(root).string();
 }

@@ -1,5 +1,9 @@
 #include "czip_file.h"
 
+const char* czip_file::name() const { return file_name; }
+
+const char* czip_file::path() const { return path_name; }
+
 int czip_file::compress_file() {
 	if (raw_data == nullptr) return Z_BUF_ERROR;
 	if (compressed_data != nullptr) delete[] compressed_data;
@@ -27,6 +31,24 @@ void czip_file::set_path(const std::string& path) {
 	path_name = new char[path.size() + 1];
 	memcpy(path_name, path.data(), path.size() + 1);
 	header.path_length = path.size();
+}
+
+void czip_file::free() {
+	delete[] raw_data;
+	delete[] compressed_data;
+	delete[] file_name;
+	delete[] path_name;
+	raw_data = nullptr;
+	compressed_data = nullptr;
+	file_name = nullptr;
+	path_name = nullptr;
+
+	memset(&header, 0, sizeof(header)); // Set everything to 0
+
+}
+
+czip_file::~czip_file() {
+	free();
 }
 
 

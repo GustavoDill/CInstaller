@@ -15,7 +15,7 @@ struct czip_file_header {
 	byte name_length = 0;
 	byte path_length = 0;
 };
-
+__declspec(dllexport)
 class czip_file {
 
 	char* file_name = nullptr;
@@ -25,8 +25,8 @@ public:
 	czip_file_header header;
 	byte* raw_data = nullptr;
 	byte* compressed_data = nullptr;
-	inline constexpr char* name() const { return file_name; }
-	inline constexpr char* path() const { return path_name; }
+	const char* name() const;
+	const char* path() const;
 
 	int compress_file();
 	int uncompress_file();
@@ -35,22 +35,9 @@ public:
 
 	void set_path(const std::string& path);
 
-	inline void free() {
-		delete[] raw_data;
-		delete[] compressed_data;
-		delete[] file_name;
-		delete[] path_name;
-		raw_data = nullptr;
-		compressed_data = nullptr;
-		file_name = nullptr;
-		path_name = nullptr;
-
-		memset(&header, 0, sizeof(header)); // Set everything to 0
-
-	}
-	inline ~czip_file() {
-		free();
-	}
+	void free();
+	
+	~czip_file();
 	friend void read_compressed_file(czip_file*, std::ifstream*);
 	friend void write_compressed_file(czip_file*, std::ofstream*);
 	friend void read_raw_file(czip_file*, std::ifstream*);
@@ -61,21 +48,3 @@ void read_compressed_file(czip_file* _file, std::ifstream* _in);
 void read_raw_file(czip_file* _file, std::ifstream* _in);
 void write_compressed_file(czip_file* _file, std::ofstream* _out);
 void write_raw_file(czip_file* _file, std::ofstream* _out);
-const char* get_z_err(int err);
-
-
-#if ___ENABLE_PRINT_BUFFER
-#include <iostream>
-#include <sstream>
-void print_buffer(byte* buff, uLong size) {
-	std::stringstream ss;
-	for (int i = 0; i < size; i++) {
-		ss << std::uppercase << std::hex << (int)buff[i] << " ";
-	}
-	std::cout << ss.str() << std::endl;
-}
-
-
-#endif
-
-

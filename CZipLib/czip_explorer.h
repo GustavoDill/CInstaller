@@ -15,35 +15,29 @@ struct czip_entry {
 	int level = 0;
 	char* path = nullptr;
 	char* file = nullptr;
-	~czip_entry() {
-		delete[] path;
-		delete[] file;
-	}
+	~czip_entry();
 };
 
 int charcount(const char c, const char* str, size_t str_size);
 
+__declspec(dllexport)
 class czip_explorer {
-	czip& m_czip;
+	czip* m_czip;
 	std::vector<czip_entry> m_entries;
 
-	inline int read_level(const czip_entry& entry) {
-		int c = charcount('\\', entry.path, entry.header.path_length) + 1;
-		return c;
-	}
+	int read_level(const czip_entry& entry);
 	int m_maxLevel = 0;
 
 	void get_entries();
 	void process_entries();
 public:
-	const int entries() const { return m_entries.size(); }
-	inline const czip_entry& operator[] (int index) const { return m_entries[index]; }
-	inline czip_explorer(czip& _czip) : m_czip(_czip) { get_entries(); }
-
-	
+	const int entries() const;
+	const czip_entry& operator[] (int index) const;
+	czip_explorer();
+	czip_explorer(czip* _czip);
 	bool extract(int index, const char* outputPath);
-
 	czip_explorer(const czip_explorer& other) = delete;
 	czip_explorer(czip_explorer&& other) = delete;
-	czip_explorer() = delete;
+	void set_ref(czip* _czip);
+	void update();
 };

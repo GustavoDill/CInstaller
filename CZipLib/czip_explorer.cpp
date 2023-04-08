@@ -12,13 +12,25 @@ void czip_explorer::process_entries() {
 		}
 	}
 }
+void czip_explorer::set_ref(czip* ref) { m_czip = ref; }
+void czip_explorer::update() { get_entries(); }
+czip_explorer::czip_explorer() { }
+
+const czip_entry& czip_explorer::operator[] (int index) const { return m_entries[index]; }
+
+int czip_explorer::read_level(const czip_entry& entry) {
+	int c = charcount('\\', entry.path, entry.header.path_length) + 1;
+	return c;
+}
+const int czip_explorer::entries() const { return m_entries.size(); }
+czip_explorer::czip_explorer(czip* _czip) : m_czip(_czip) { get_entries(); }
 bool czip_explorer::extract(int index, const char* outputPath) {
 	if (index >= m_entries.size()) return false;
 
 	czip_entry& entry = m_entries[index];
-	m_czip.current_file = index;
-	m_czip._in.seekg(entry.data_pos);
-	czip_file* file = m_czip.read_next();
+	m_czip->current_file = index;
+	m_czip->_in.seekg(entry.data_pos);
+	czip_file* file = m_czip->read_next();
 	if (file->uncompress_file() != Z_OK)
 		return false;
 
@@ -29,16 +41,16 @@ bool czip_explorer::extract(int index, const char* outputPath) {
 
 
 void czip_explorer::get_entries() {
-	m_entries.reserve(m_czip.total_files());
-	m_czip._in.seekg(sizeof czip_header);
+	m_entries.reserve(m_czip->total_files());
+	m_czip->_in.seekg(sizeof czip_header);
 
-	for (int i = 0; i < m_czip.total_files(); i++) {
+	for (int i = 0; i < m_czip->total_files(); i++) {
 
 		m_entries.emplace_back(); // create new entry
 		czip_entry& entry = m_entries[m_entries.size() - 1]; // get reference to it
-		entry.data_pos = m_czip._in.tellg();
-		m_czip._in.read((char*)&entry.header, sizeof czip_file_header); // read its header
-		uLong cPos = static_cast<uLong>(m_czip._in.tellg());
+		entry.data_pos = m_czip->_in.tellg();
+		m_czip->_in.read((char*)&entry.header, sizeof czip_file_header); // read its header
+		uLong cPos = static_cast<uLong>(m_czip->_in.tellg());
 
 		entry.type = CZIP_File;
 
@@ -46,12 +58,12 @@ void czip_explorer::get_entries() {
 		if (entry.header.name_length != 0) {
 			entry.file = new char[entry.header.name_length + 1];
 			entry.file[entry.header.name_length] = 0;
-			m_czip._in.read(entry.file, entry.header.name_length);
+			m_czip->_in.read(entry.file, entry.header.name_length);
 		}
 		if (entry.header.path_length != 0) {
 			entry.path = new char[entry.header.path_length + 1];
 			entry.path[entry.header.path_length] = 0;
-			m_czip._in.read(entry.path, entry.header.path_length);
+			m_czip->_in.read(entry.path, entry.header.path_length);
 		}
 
 
@@ -60,10 +72,10 @@ void czip_explorer::get_entries() {
 		if (m_maxLevel < entry.level)
 			m_maxLevel = entry.level;
 
-		m_czip._in.seekg(cPos
+		m_czip->_in.seekg(cPos
 						 + entry.header.compressed_data_size
 						 + entry.header.name_length
-						 + entry.header.path_length, m_czip._in.beg); // tell file to skip over content of the file
+						 + entry.header.path_length, m_czip->_in.beg); // tell file to skip over content of the file
 
 	}
 
@@ -75,4 +87,9 @@ int charcount(const char c, const char* str, size_t str_size) {
 		if (str[i] == c) ++count;
 	}
 	return count;
+}
+
+czip_entry::~czip_entry() {
+	delete[] path;
+	delete[] file;
 }
