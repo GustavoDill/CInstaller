@@ -7,7 +7,7 @@
 extern std::vector<std::string> arg_names;
 extern std::vector<std::string> arg_desc;
 
-#define CREATE_ARG_VARIABLES std::vector<std::string> arg_names; std::vector<std::string> arg_desc
+#define CREATE_ARG_VARIABLES Args args; std::vector<std::string> arg_names; std::vector<std::string> arg_desc
 
 #define sc std::cout
 void help() {

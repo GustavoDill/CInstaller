@@ -4,15 +4,13 @@
 #include "help.h"
 #include "binds.h"
 
-IMPORT_LIB("../CZipLib/lib", "CZipLib");
+IMPORT_LIB("C:/libs/CZip-1.0", "CZipLib");
 
 
 #define PRINT_HELP_AND_EXIT() { help(); exit(-1); }
 
 // Binds an action
 #define BIND(name, callback)if (args[1] == name) { exit(callback()); }
-
-Args args;
 
 CREATE_ARG_VARIABLES;
 
@@ -33,5 +31,5 @@ int main(int argc, char** argv) {
 	BIND("c", f_compress);
 	BIND("e", f_extract);
 	BIND("l", f_list);
-
+	BIND("ei", f_extract_index);
 }
