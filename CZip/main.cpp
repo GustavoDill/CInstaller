@@ -4,7 +4,7 @@
 #include "help.h"
 #include "binds.h"
 
-IMPORT_LIB("C:/libs/CZip-1.0", "CZipLib");
+IMPORT_LIB("../CZipLib/lib", "CZipLib");
 
 
 #define PRINT_HELP_AND_EXIT() { help(); exit(-1); }
