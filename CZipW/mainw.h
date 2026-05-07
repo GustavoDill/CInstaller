@@ -3,6 +3,8 @@
 #include <wx/listctrl.h>
 #include "../CZipLib/czip.h"
 #include "../CZipLib/czip_explorer.h"
+#include "archive.h"
+#include <wx/mstream.h>
 
 class mainw : public wxFrame {
 
@@ -10,7 +12,7 @@ class mainw : public wxFrame {
 	wxListCtrl* list;
 	czip czip;
 	czip_explorer explorer;
-	void list_sizec(wxSizeEvent& evt){ list->SetColumnWidth(0, wxLIST_AUTOSIZE_USEHEADER); evt.Skip(); }
+	void list_sizec(wxSizeEvent& evt) { list->SetColumnWidth(0, wxLIST_AUTOSIZE_USEHEADER); evt.Skip(); }
 
 	void OnOpen(wxCommandEvent& event) {
 		wxFileDialog openFileDialog(this, _("Open file"), "", "", "CZip files (*.czip)|*.czip", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -23,7 +25,7 @@ class mainw : public wxFrame {
 	}
 
 
-	
+
 
 	void OnRightClick(wxListEvent& event) {
 		PopupMenu(contextMenu);
@@ -33,27 +35,41 @@ class mainw : public wxFrame {
 		// Your code to extract the file here
 		long selItem = -1;
 		selItem = list->GetNextItem(selItem, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-		if( selItem != -1)
+		if (selItem != -1)
 			ExtractFile(selItem);
 	}
 
 	wxMenu* contextMenu;
 public:
+	~mainw() {
+		//delete[] archive_data;
+	}
 	mainw(const wxString& title, const wxSize size)
 		: wxFrame(nullptr, -1, title, wxDefaultPosition, size)
-		, czip(MODE_DECOMPRESS)
-	{
+		, czip(MODE_DECOMPRESS) {
+
+		
+		
+
 		explorer.set_ref(&czip);
 		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 		list = new wxListCtrl(this, -1, wxPoint(0, 0), wxDefaultSize, wxLC_REPORT | wxLC_NO_HEADER);
-		 img = new wxImageList(16, 16);
-		wxBitmap folder;
-		if (folder.LoadFile("M:\\linux-backup\\software\\ANGRYsearch-1.0.1\\resources\\mimeicons\\numix\\archive.png", wxBITMAP_TYPE_PNG) == false) {
-			throw "Error loading image.";
-		};
-		wxImage image = folder.ConvertToImage();
+
+		img = new wxImageList(16, 16);
+		byte archive_data FOLDER_DATA;
+		wxMemoryInputStream stream(archive_data, 582);
+		wxImage image;
+
+		image.LoadFile(stream, wxBITMAP_TYPE_PNG);
+
 		image.Rescale(16, 16);
-		img->Add(wxBitmap(image));
+
+		wxBitmap bmp(image);
+		wxIcon icon;
+		icon.CopyFromBitmap(bmp);
+		SetIcon(icon);
+
+		img->Add(bmp);
 		//img->Add(folder);
 		list->AssignImageList(img, wxIMAGE_LIST_SMALL);
 		Bind(wxEVT_SIZE, &mainw::list_sizec, this);
